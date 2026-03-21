@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flores Amarillas para Ti</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #ffcc00;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+            position: relative; /* Para el botón de saltar */
+        }
+
+        /* Título superior (Bien separado) */
+        .header {
+            margin-top: 50px; /* Espacio superior */
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ffcc00;
+            text-transform: uppercase;
+            z-index: 10; /* Asegurar que esté sobre la lluvia */
+        }
+
+        /* Contenedor central de la flor */
+        .flower-container {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .flower-container:hover {
+            transform: scale(1.1);
+        }
+
+        .main-flower {
+            width: 180px; /* Lirio central un poco más grande */
+            filter: drop-shadow(0 0 15px #ffcc00);
+        }
+
+        /* Instrucción (Bien separada de la flor) */
+        .instruction {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-top: 25px; /* Más espacio */
+            opacity: 0.8;
+            letter-spacing: 1px;
+        }
+
+        /* Mensaje inferior (Bien separado) */
+        .footer {
+            margin-bottom: 60px; /* Espacio inferior */
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 25px #ffcc00;
+            z-index: 10;
+        }
+
+        /* --- Estilos para los lirios que caen --- */
+        .falling-lily {
+            position: absolute;
+            /* Usamos un ícono de lirio amarillo como fondo */
+            background-image: url('lirio.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0; /* Empiezan invisibles */
+            pointer-events: none;
+            filter: drop-shadow(0 0 5px #ffcc00);
+            animation: fallAndFade linear forwards;
+        }
+
+        @keyframes fallAndFade {
+            0% {
+                transform: translateY(-15vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8; /* Aparecen rápido */
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(110vh) rotate(720deg); /* Caen y giran mucho */
+                opacity: 0; /* Desaparecen al final */
+            }
+        }
+
+        /* Botón opcional de "Saltar" */
+        .skip-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 204, 0, 0.2);
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 20;
+            transition: background 0.3s;
+        }
+        .skip-btn:hover {
+            background: rgba(255, 204, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">¡Feliz Día de las Flores Amarillas, mi chiquita!</div>
+
+    <div class="flower-container" id="flowerBtn" onclick="startSurprise()">
+        <img src="lirio.png" alt="Lirio Amarillo Central" class="main-flower">
+        <div class="instruction">Toca para iniciar</div>
+    </div>
+
+    <div class="footer">Te quiero demasiado</div>
+
+    <script>
+        function startSurprise() {
+            // 1. Ocultar la instrucción y la flor central (opcional)
+            document.querySelector('.instruction').style.display = 'none';
+            // document.getElementById('flowerBtn').style.opacity = '0.5';
+
+            // 2. Crear la lluvia de LIRIOS
+            const totalLilies = 35; // Cantidad de lirios
+            for (let i = 0; i < totalLilies; i++) {
+                createFallingLily();
+            }
+
+            // 3. Redirigir después de la animación (ej. 4.5 segundos)
+            setTimeout(() => {
+                // !!! EDITAR AQUÍ EL ENLACE DE DESTINO !!!
+                window.location.href = "segunda.html"; // Reemplaza con tu URL
+            }, 4500); // 4500 milisegundos = 4.5 segundos
+        }
+
+        function createFallingLily() {
+            const lily = document.createElement('div');
+            lily.classList.add('falling-lily');
+            
+            // Tamaño aleatorio para variedad
+            const sizeValue = Math.random() * 30 + 30; // Entre 30px y 60px
+            lily.style.width = sizeValue + 'px';
+            lily.style.height = sizeValue + 'px';
+            
+            // Posición horizontal aleatoria
+            lily.style.left = Math.random() * 100 + 'vw';
+            
+            // Duración de caída aleatoria para efecto natural (entre 2s y 4.5s)
+            const duration = Math.random() * 2.5 + 2 + 's';
+            lily.style.animationDuration = duration;
+            
+            // Retraso aleatorio para que no caigan todos a la vez
+            lily.style.animationDelay = Math.random() * 1.5 + 's';
+
+            document.body.appendChild(lily);
+
+            // Limpiar el elemento después de que termine la animación
+            setTimeout(() => {
+                lily.remove();
+            }, 6000); // Un poco más que la duración máxima
+        }
+    </script>
+</body>
+</html>
