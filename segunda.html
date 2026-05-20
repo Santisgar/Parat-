@@ -1,255 +1,213 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Te amo mucho</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        canvas { display: block; }
-
-        /* Contenedor de etiquetas HTML que flotan sobre el 3D */
-        #labels-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }        
-        
-        .floating-label {
-            position: absolute;
-            color: #ffcc00;
-            cursor: pointer;
-            pointer-events: auto; /* Permitir clics sobre el texto */
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #ffcc00, 0 0 20px #000;
-            transition: transform 0.2s, color 0.2s, font-size 0.2s;
-            user-select: none;
-            white-space: nowrap;
-        }
-        .floating-label:hover { transform: scale(1.3); color: #fff; text-shadow: 0 0 15px #fff; font-size: 15px; }
-
-        /* Capa oscura de fondo cuando la carta está abierta */
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; z-index: 100;
-            backdrop-filter: blur(8px);
-        }
-
-        /* La "Carta" con el mensaje largo */
-        #carta {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 85%; max-width: 450px;
-            padding: 35px;
-            background: linear-gradient(145deg, #1a1a1a, #050505);
-            border: 2px solid #ffcc00;
-            border-radius: 25px;
-            color: #fff; text-align: center;
-            box-shadow: 0 0 50px rgba(255, 204, 0, 0.4);
-        }
-        #carta h1 { color: #ffcc00; margin-bottom: 20px; font-size: 22px; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        #carta p { line-height: 1.8; font-size: 17px; font-style: italic; color: #e0e0e0; }
-        #close-btn { margin-top: 30px; background: #ffcc00; color: #000; border: none; padding: 12px 25px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        #close-btn:hover { background: #fff; transform: scale(1.05); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Te amo mucho</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; font-family:'Segoe UI',sans-serif; }
+canvas { display:block; }
+#labels { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10; }
+.lbl {
+  position:absolute; color:#ffcc00; cursor:pointer; pointer-events:auto;
+  font-size:13px; font-weight:bold; white-space:nowrap; user-select:none;
+  text-shadow:0 0 8px #ffcc00, 0 0 16px rgba(255,204,0,0.4);
+  will-change:transform;
+}
+.lbl:hover { color:#fff; text-shadow:0 0 14px #fff, 0 0 28px #ffd700; font-size:15px; }
+#overlay {
+  position:absolute; inset:0; background:rgba(0,0,0,0.85);
+  display:none; z-index:100; align-items:center; justify-content:center;
+  backdrop-filter:blur(6px);
+}
+#overlay.on { display:flex; }
+#carta {
+  width:88%; max-width:440px; padding:36px 32px;
+  background:linear-gradient(145deg,#111,#000);
+  border:2px solid #ffcc00; border-radius:22px; color:#fff; text-align:center;
+  box-shadow:0 0 50px rgba(255,204,0,0.35);
+  animation:pop 0.3s ease;
+}
+@keyframes pop { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
+#carta h2 { color:#ffcc00; font-size:20px; letter-spacing:2px; margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #333; }
+#carta p { line-height:1.85; font-size:16px; font-style:italic; color:#ddd; }
+#cerrar { margin-top:28px; background:#ffcc00; color:#000; border:none; padding:11px 28px; border-radius:50px; cursor:pointer; font-weight:bold; font-size:15px; transition:0.25s; }
+#cerrar:hover { background:#fff; transform:scale(1.06); }
+#hint { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); color:rgba(255,204,0,0.5); font-size:12px; letter-spacing:1px; pointer-events:none; z-index:5; }
+</style>
 </head>
 <body>
+<div id="labels"></div>
+<div id="overlay">
+  <div id="carta">
+    <h2 id="ctitulo"></h2>
+    <p id="cmensaje"></p>
+    <button id="cerrar">Cerrar mensaje</button>
+  </div>
+</div>
+<div id="hint">Haz clic en cualquier frase ✦ Arrastra para girar</div>
 
-    <div id="labels-container"></div>
-    
-    <div id="overlay">
-        <div id="carta">
-            <h1 id="titulo-carta">MENSAJE ESPECIAL</h1>
-            <p id="mensaje-largo"></p>
-            <button id="close-btn">Cerrar Mensaje</button>
-        </div>
-    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const phrases = [
+  { s:"Siempre tú", l:"Siempre termino pensando en ti, incluso en los momentos más simples del día. No importa qué esté haciendo, de alguna forma apareces en mi mente sin avisar. Y no es casualidad… es porque tienes un lugar especial que no cualquiera logra ocupar." },
+  { s:"Eres luz", l:"Tienes una forma de iluminar todo a tu alrededor que no se puede explicar fácilmente. No es algo que se vea, es algo que se siente. Estar cerca de ti hace que todo sea más claro, más bonito y mucho más tranquilo." },
+  { s:"Quédate", l:"Si pudiera pedir algo sin dudarlo, sería que te quedaras un poco más en mi vida. Porque contigo los días son diferentes, más llevaderos, más reales. Y la verdad… me gustaría que eso no se acabara tan rápido." },
+  { s:"Mi calma", l:"En medio de todo el ruido, del estrés y de los problemas, tú eres ese punto donde todo se detiene. Donde puedo respirar tranquilo y sentir que nada está tan mal como parece." },
+  { s:"Solo tú", l:"Entre tantas personas que pasan por la vida, hay algo en ti que simplemente no se compara con nadie más. No es solo lo que haces, es lo que transmites… y eso es imposible de reemplazar." },
+  { s:"Mi lugar", l:"Contigo siento que no tengo que fingir nada, que puedo ser yo completamente. Y eso es raro de encontrar. Es como si, sin darme cuenta, me hubiera encontrado justo donde debía estar." },
+  { s:"Eres magia", l:"No sé exactamente qué es lo que tienes, pero hay algo en ti que hace que todo sea más bonito. Incluso los días normales se sienten especiales cuando estás presente." },
+  { s:"Mi paz", l:"Hay personas que llegan a complicarlo todo… pero tú haces lo contrario. Contigo todo se siente más simple, más tranquilo, como si el mundo deja de pesar tanto." },
+  { s:"Te pienso", l:"A veces sin darme cuenta, en medio del día, en una canción o en cualquier momento, apareces en mi mente. Y aunque no siempre lo diga, eso pasa más de lo que imaginas." },
+  { s:"Eres especial", l:"No es una palabra que use a la ligera. Realmente tienes algo diferente, algo que no se encuentra fácilmente. Y eso es lo que hace que seas tan importante." },
+  { s:"Me haces bien", l:"Estar cerca de ti tiene un efecto que no puedo explicar del todo. Es como si todo se acomodara poco a poco, como si las cosas empezaran a tener más sentido." },
+  { s:"Mi sonrisa", l:"Muchas de mis sonrisas tienen que ver contigo, aunque no lo sepas. Es algo que simplemente pasa." },
+  { s:"Eres tú", l:"No es coincidencia ni suerte… simplemente eres tú. Tu forma de ser, de hablar, de estar… todo eso es lo que hace que todo se sienta diferente." },
+  { s:"Mi alegría", l:"Incluso en los días más pesados, tienes la capacidad de cambiar cómo me siento. Es como si trajeras un poco de luz cuando más se necesita." },
+  { s:"Contigo", l:"Contigo todo se siente más fácil, más natural. No hay presión, no hay miedo… solo tranquilidad." },
+  { s:"Me importas", l:"Más de lo que puedo decir en pocas palabras. De verdad ocupas un lugar importante, y eso no es algo que pase con cualquiera." },
+  { s:"Eres diferente", l:"No sé explicarlo bien, pero contigo todo se siente distinto. Hay algo especial que hace que todo tenga más valor." },
+  { s:"Mi todo", l:"Poco a poco te has ido convirtiendo en alguien muy importante en mi vida, sin forzarlo, sin planearlo… simplemente pasó." },
+  { s:"Me encantas", l:"No es solo una cosa, son muchas. Tu forma de ser, de pensar, de actuar… todo suma y hace que seas alguien increíble." },
+  { s:"Mi persona", l:"Si tuviera que elegir a alguien para compartir momentos, pensamientos o incluso silencios… siempre terminaría eligiéndote a ti." },
+  { s:"Eres calma", l:"Tienes una energía que transmite tranquilidad. No necesitas hacer mucho, solo estar, y eso ya cambia todo." },
+  { s:"Me gustas", l:"No hay explicación complicada, simplemente me gustas tal como eres. Sin cambios, sin condiciones." },
+  { s:"Mi refugio", l:"Contigo siento que puedo ser yo mismo sin miedo a ser juzgado. Y eso vale más de lo que parece." },
+  { s:"Eres todo", l:"Poco a poco ocupas más espacio en mi vida, en mis pensamientos, en mi día… y la verdad no me molesta en lo absoluto." },
+  { s:"Aquí estoy", l:"Pase lo que pase, quiero que sepas que puedes contar conmigo. En los buenos momentos y también en los difíciles." },
+  { s:"Me haces feliz", l:"Tu forma de ser tiene un impacto real en mí. No es algo superficial, es algo que se siente de verdad." },
+  { s:"No cambies", l:"Tal como eres ahora, eres más que suficiente. No necesitas ser diferente para ser especial." },
+  { s:"Eres única", l:"No hay nadie como tú, y eso es exactamente lo que hace que todo esto sea tan especial." },
+  { s:"Siempre", l:"No importa cuánto tiempo pase o qué cambie, hay cosas que simplemente permanecen… y tú eres una de ellas." },
+  { s:"Te elijo", l:"Entre tanto, entre todos, te sigo eligiendo a ti, una y otra vez, sin dudarlo." }
+];
 
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.136.0/build/three.module.js';
-        import { OrbitControls } from 'https://unpkg.com/three@0.136.0/examples/jsm/controls/OrbitControls.js?module';
-        import { EffectComposer } from 'https://unpkg.com/three@0.136.0/examples/jsm/postprocessing/EffectComposer.js?module';
-        import { RenderPass } from 'https://unpkg.com/three@0.136.0/examples/jsm/postprocessing/RenderPass.js?module';
-        import { UnrealBloomPass } from 'https://unpkg.com/three@0.136.0/examples/jsm/postprocessing/UnrealBloomPass.js?module';
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 2000);
+camera.position.set(0, 70, 180);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
 
-        // --- 1. CONFIGURACIÓN DE ESCENA Y RENDERER ---
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
+// Estrellas de fondo
+const starPos = new Float32Array(9000);
+for(let i=0;i<9000;i++) starPos[i]=(Math.random()-0.5)*1800;
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos,3));
+scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({color:0xffffff,size:0.22})));
 
-        const textureLoader = new THREE.TextureLoader();
+// Centro negro
+const core = new THREE.Mesh(new THREE.SphereGeometry(14,32,32), new THREE.MeshBasicMaterial({color:0x000000}));
+scene.add(core);
 
-        // --- 2. FONDO DE ESTRELLAS ---
-        const starCoords = new Float32Array(8000 * 3);
-        for (let i = 0; i < 24000; i++) starCoords[i] = (Math.random() - 0.5) * 2000;
-        const starGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(starCoords, 3));
-        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25 }));
-        scene.add(stars);
+// Anillo dorado
+const ring = new THREE.Mesh(
+  new THREE.RingGeometry(17,27,64),
+  new THREE.MeshBasicMaterial({color:0xffcc00,side:THREE.DoubleSide,transparent:true,opacity:0.88})
+);
+ring.rotation.x = Math.PI/2;
+scene.add(ring);
 
-        // --- 3. CENTRO OSCURO Y ANILLO ---
-        const coreGeo = new THREE.SphereGeometry(15, 32, 32);
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const blackHole = new THREE.Mesh(coreGeo, coreMat);
-        scene.add(blackHole);
+// Partículas orbitales
+const galaxy = new THREE.Group();
+scene.add(galaxy);
+const pPos = new Float32Array(3600*3);
+for(let i=0;i<3600;i++){
+  const a=Math.random()*Math.PI*2, r=38+Math.random()*65;
+  pPos[i*3]=Math.cos(a)*r; pPos[i*3+1]=(Math.random()-0.5)*12; pPos[i*3+2]=Math.sin(a)*r;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+const pMat = new THREE.PointsMaterial({color:0xffeebb,size:0.28,transparent:true,blending:THREE.AdditiveBlending});
+galaxy.add(new THREE.Points(pGeo,pMat));
 
-        const ringGeo = new THREE.RingGeometry(18, 28, 64);
-        const ringMat = new THREE.MeshBasicMaterial({ 
-            color: 0xffdb00, 
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.9
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = Math.PI / 2;
-        scene.add(ring);
+// Puntos amarillos brillantes
+const bPos = new Float32Array(400*3);
+for(let i=0;i<400;i++){
+  const a=Math.random()*Math.PI*2, r=32+Math.random()*50;
+  bPos[i*3]=Math.cos(a)*r; bPos[i*3+1]=(Math.random()-0.5)*10; bPos[i*3+2]=Math.sin(a)*r;
+}
+const bGeo = new THREE.BufferGeometry();
+bGeo.setAttribute('position', new THREE.BufferAttribute(bPos,3));
+galaxy.add(new THREE.Points(bGeo, new THREE.PointsMaterial({color:0xffcc00,size:0.55,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending})));
 
-        // --- 4. GALAXIA DINÁMICA DE PARTÍCULAS Y TEXTOS ---
-        const dynamicGalaxy = new THREE.Group();
-        scene.add(dynamicGalaxy);
+// Etiquetas HTML 3D
+const anchors = [];
+const container = document.getElementById('labels');
+phrases.forEach((p,i)=>{
+  const angle=(i/phrases.length)*Math.PI*2;
+  const r=48+Math.random()*28;
+  const obj = new THREE.Object3D();
+  obj.position.set(Math.cos(angle)*r,(Math.random()-0.5)*18,Math.sin(angle)*r);
+  galaxy.add(obj);
+  const div = document.createElement('div');
+  div.className='lbl'; div.textContent=p.s;
+  div.onclick=()=>{
+    document.getElementById('ctitulo').textContent=p.s.toUpperCase();
+    document.getElementById('cmensaje').textContent=p.l;
+    document.getElementById('overlay').classList.add('on');
+  };
+  container.appendChild(div);
+  anchors.push({obj,div});
+});
 
-        const flashPos = new Float32Array(4000 * 3);
-        for (let i = 0; i < 4000; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const r = 40 + Math.random() * 60; // Órbita exterior
-            flashPos[i*3] = Math.cos(angle) * r;
-            flashPos[i*3+1] = (Math.random() - 0.5) * 15; // Grosor
-            flashPos[i*3+2] = Math.sin(angle) * r;
-        }
-        const flashMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true, blending: THREE.AdditiveBlending });
-        const flashes = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(flashPos, 3)), flashMat);
-        dynamicGalaxy.add(flashes);
+document.getElementById('cerrar').onclick=()=>document.getElementById('overlay').classList.remove('on');
+document.getElementById('overlay').onclick=e=>{ if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('on'); };
 
-        // --- ---
-        const rutasLirios = ['lirio1.png', 'lirio2.png', 'lirio3.png']; 
-        const lilyTextures = rutasLirios.map(r => textureLoader.load(r));
-        const lilySprites = [];
+// Drag para rotar — distingue drag real de click
+let isDragging=false, prevX=0, prevY=0, rotY=0, rotX=0, didMove=false;
+renderer.domElement.addEventListener('mousedown',e=>{isDragging=true;didMove=false;prevX=e.clientX;prevY=e.clientY;});
+window.addEventListener('mouseup',()=>{isDragging=false;});
+window.addEventListener('mousemove',e=>{
+  if(!isDragging)return;
+  const dx=e.clientX-prevX, dy=e.clientY-prevY;
+  if(Math.abs(dx)>2||Math.abs(dy)>2) didMove=true;
+  rotY+=dx*0.005; rotX+=dy*0.003;
+  rotX=Math.max(-0.9,Math.min(0.9,rotX));
+  prevX=e.clientX; prevY=e.clientY;
+});
+renderer.domElement.addEventListener('touchstart',e=>{isDragging=true;didMove=false;prevX=e.touches[0].clientX;prevY=e.touches[0].clientY;},{passive:true});
+window.addEventListener('touchend',()=>isDragging=false);
+window.addEventListener('touchmove',e=>{
+  if(!isDragging)return;
+  const dx=e.touches[0].clientX-prevX, dy=e.touches[0].clientY-prevY;
+  if(Math.abs(dx)>2||Math.abs(dy)>2) didMove=true;
+  rotY+=dx*0.005; rotX+=dy*0.003;
+  prevX=e.touches[0].clientX; prevY=e.touches[0].clientY;
+},{passive:true});
 
-        for (let i = 0; i < 20; i++) {
-            const mat = new THREE.SpriteMaterial({ map: lilyTextures[i % 3], transparent: true, opacity: 0.44444 });
-            const sprite = new THREE.Sprite(mat);
-            const angle = Math.random() * Math.PI * 2;
-            const r = 55 + Math.random() * 45;
-            sprite.position.set(Math.cos(angle) * r, (Math.random() - 0.5) * 15, Math.sin(angle) * r);
-            sprite.scale.set(25,25, 1);
-            dynamicGalaxy.add(sprite);
-            lilySprites.push(sprite);
-        }
-        // --- FIN DE LA SECCIÓN DE LIRIOS AJUSTADOS ---
+const tmp = new THREE.Vector3();
+let t=0;
+function animate(){
+  requestAnimationFrame(animate);
+  t+=0.016;
+  galaxy.rotation.y += 0.0014;
+  ring.rotation.z += 0.002;
+  scene.rotation.x += (rotX - scene.rotation.x)*0.06;
+  scene.rotation.y += (rotY - scene.rotation.y)*0.06;
+  pMat.opacity = 0.45 + Math.sin(t*2)*0.25;
 
-        // --- 5. FRASES ORBITANDO (TUS MENSAJES) ---
-        const phrases = [
-            { short: "Siempre tú", long: "Siempre termino pensando en ti, incluso en los momentos más simples del día. No importa qué esté haciendo, de alguna forma apareces en mi mente sin avisar. Y no es casualidad… es porque tienes un lugar especial que no cualquiera logra ocupar." },
-            { short: "Eres luz", long: "Tienes una forma de iluminar todo a tu alrededor que no se puede explicar fácilmente. No es algo que se vea, es algo que se siente. Estar cerca de ti hace que todo sea más claro, más bonito y mucho más tranquilo." },
-            { short: "Quédate", long: "Si pudiera pedir algo sin dudarlo, sería que te quedaras un poco más en mi vida. Porque contigo los días son diferentes, más llevaderos, más reales. Y la verdad… me gustaría que eso no se acabara tan rápido." },
-            { short: "Mi calma", long: "En medio de todo el ruido, del estrés y de los problemas, tú eres ese point donde todo se detiene. Donde puedo respirar tranquilo y sentir que nada está tan mal como parece." },
-            { short: "Solo tú", long: "Entre tantas personas que pasan por la vida, hay algo en ti que simplemente no se compara con nadie más. No es solo lo que haces, es lo que transmites… y eso es imposible de reemplazar." },
-            { short: "Mi lugar", long: "Contigo siento que no tengo que fingir nada, que puedo ser yo completamente. Y eso es raro de encontrar. Es como si, sin darme cuenta, me hubiera encontrado justo donde debía estar." },
-            { short: "Eres magia", long: "No sé exactamente qué es lo que tienes, pero hay algo en ti que hace que todo sea más bonito. Incluso los días normales se sienten especiales cuando estás presente." },
-            { short: "Mi paz", long: "Hay personas que llegan a complicarlo todo… pero tú haces lo contrario. Contigo todo se siente más simple, más tranquilo, como si el mundo deja de pesar tanto." },
-            { short: "Te pienso", long: "A veces sin darme cuenta, en medio del día, en una canción o en cualquier momento, apareces en mi mente. And though I do not always say it, that happens more than you imagine." },
-            { short: "Eres especial", long: "No es una palabra que use a la ligera. Realmente tienes algo diferente, algo que no se encuentra fácilmente. Y eso es lo que hace que seas tan importante." },
-            { short: "Me haces bien", long: "Estar cerca de ti tiene un efecto que no puedo explicar del todo. Es como si todo se acomodara poco a poco, como si las cosas empezaran a tener más sentido." },
-            { short: "Mi sonrisa", long: "Muchas de mis sonrisas tienen que ver contigo, aunque no lo sepas. Es algo que simplemente pasa." },
-            { short: "Eres tú", long: "No es coincidencia ni suerte… simplemente eres tú. Tu forma de ser, de hablar, de estar… todo eso es lo que hace que todo se sienta diferente." },
-            { short: "Mi alegría", long: "Incluso en los días más pesados, tienes la capacidad de cambiar cómo me siento. Es como si trajeras un poco de luz cuando más se necesita." },
-            { short: "Contigo", long: "Contigo todo se siente más fácil, más natural. No hay presión, no hay miedo… solo tranquilidad." },
-            { short: "Me importas", long: "Más de lo que puedo decir en pocas palabras. De verdad ocupas un lugar importante, y eso no es algo que pase con cualquiera." },
-            { short: "Eres diferente", long: "No sé explicarlo bien, pero contigo todo se siente distinto. Hay algo especial que hace que todo tenga más valor." },
-            { short: "Mi todo", long: "Poco a poco te has ido convirtiendo en alguien muy importante en mi vida, sin forzarlo, sin planearlo… simplemente pasó." },
-            { short: "Me encantas", long: "No es solo una cosa, son muchas. Tu forma de ser, de pensar, de actuar… todo suma y hace que seas alguien increíble." },
-            { short: "Mi persona", long: "Si tuviera que elegir a alguien para compartir momentos, pensamientos o incluso silencios… siempre terminaría eligiéndote a ti." },
-            { short: "Eres calma", long: "Tienes una energía que transmite tranquilidad. No necesitas hacer mucho, solo estar, y eso ya cambia todo." },
-            { short: "Me gustas", long: "No hay explicación complicada, simplemente me gustas tal como eres. Sin cambios, sin condiciones." },
-            { short: "Mi refugio", long: "Contigo siento que puedo ser yo mismo sin miedo a ser juzgado. Y eso vale más de lo que parece." },
-            { short: "Eres todo", long: "Poco a poco ocupas más espacio en mi vida, en mis pensamientos, en mi día… y la verdad no me molesta en lo absoluto." },
-            { short: "Aquí estoy", long: "Pase lo que pase, quiero que sepas que puedes contar conmigo. En los buenos momentos y también en los difíciles." },
-            { short: "Me haces feliz", long: "Tu forma de ser tiene un impacto real en mí. No es algo superficial, es algo que se siente de verdad." },
-            { short: "No cambies", long: "Tal como eres ahora, eres más que suficiente. No necesitas ser diferente para ser especial." },
-            { short: "Eres única", long: "No hay nadie como tú, y eso es exactamente lo que hace que todo esto sea tan especial." },
-            { short: "Siempre", long: "No importa cuánto tiempo pase o qué cambie, hay cosas que simplemente permanecen… y tú eres una de ellas." },
-            { short: "Te elijo", long: "Entre tanto, entre todos, te sigo eligiendo a ti, una y otra vez, sin dudarlo." }
-        ];
+  anchors.forEach(({obj,div})=>{
+    obj.getWorldPosition(tmp);
+    tmp.project(camera);
+    const x=(tmp.x*0.5+0.5)*innerWidth;
+    const y=(tmp.y*-0.5+0.5)*innerHeight;
+    const behind = tmp.z>1;
+    div.style.opacity = behind?'0':'1';
+    div.style.pointerEvents = behind?'none':'auto';
+    div.style.transform=`translate(-50%,-50%) translate(${x}px,${y}px)`;
+  });
+  renderer.render(scene,camera);
+}
+animate();
 
-        const labelElements = [];
-        const container = document.getElementById('labels-container');
-
-        phrases.forEach((p, i) => {
-            const angle = (i / phrases.length) * Math.PI * 2;
-            const r = 50 + Math.random() * 25; // Radio orbital
-            const ancor = new THREE.Object3D();
-            ancor.position.set(Math.cos(angle)*r, (Math.random()-0.5)*15, Math.sin(angle)*r);
-            dynamicGalaxy.add(ancor);
-
-            // Crear el elemento HTML (div) para la etiqueta
-            const div = document.createElement('div');
-            div.className = 'floating-label';
-            div.textContent = p.short;
-            
-            // Lógica de apertura de la carta
-            div.onclick = () => {
-                document.getElementById('mensaje-largo').textContent = p.long;
-                document.getElementById('titulo-carta').textContent = p.short.toUpperCase();
-                document.getElementById('overlay').style.display = 'block';
-            };
-            
-            container.appendChild(div);
-            labelElements.push({ mesh: ancor, element: div });
-        });
-
-        // --- 6. POST-PROCESAMIENTO (BLOOM/BRILLO) ---
-        const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 2.2, 0.5, 0.43);
-        const composer = new EffectComposer(renderer);
-        composer.addPass(renderScene);
-        composer.addPass(bloomPass);
-
-        // --- 7. CÁMARA, CONTROLES Y LOOP ---
-        camera.position.set(0, 80, 200);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-
-        document.getElementById('close-btn').onclick = () => { document.getElementById('overlay').style.display = 'none'; };
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            dynamicGalaxy.rotation.y += 0.0015; // Giran juntos: textos, destellos y lirios
-
-            // Efecto de parpadeo dinámico aleatorio (Titileo)
-            flashMat.opacity = 0.4 + Math.random() * 0.6;
-
-            // Lógica de Oclusión para Lirios (Para que no se vean a través del centro negro)
-            lilySprites.forEach(sprite => {
-                const tempV = new THREE.Vector3();
-                sprite.getWorldPosition(tempV); // Obtener posición 3D real del lirio
-                tempV.project(camera); // Proyectar a coordenadas de pantalla de la cámara
-                
-                // Si el Sprite está detrás del centro oscuro ( depth > 1), lo ocultamos
-                // tempV.z > 1 significa que está "más allá" del plano lejano de la cámara respecto al centro.
-                sprite.visible = tempV.z <= 1;
-            });
-
-            // Actualizar la interfaz HTML (Proyección 3D a HTML)
-            labelElements.forEach(item => {
-                const tempV = new THREE.Vector3();
-                item.mesh.getWorldPosition(tempV);
-                tempV.project(camera);
-                const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
-                const y = (tempV.y * -0.5 + 0.5) * window.innerHeight;
-                item.element.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
-                item.element.style.opacity = tempV.z > 1 ? "0" : "1";
-            });
-
-            composer.render();
-        }
-        animate();
-
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            composer.setSize(window.innerWidth, window.innerHeight);
-        };
-    </script>
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+</script>
 </body>
 </html>
