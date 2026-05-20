@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para ti 💙</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+#carta-final-box{position:relative;z-index:2;width:100%;max-width:480px;padding:42px 38px;background:linear-gradient(145deg,#0d0d0d,#000);border:2px solid #ffcc00;border-radius:24px;color:#fff;text-align:center;box-shadow:0 0 80px rgba(255,204,0,0.4);animation:pop 0.7s ease;}
+@keyframes pop{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
+h2{color:#ffcc00;font-size:22px;letter-spacing:3px;margin-bottom:22px;}
+p{line-height:2;font-size:15px;font-style:italic;color:#e0e0e0;margin-bottom:14px;}
+.firma{color:#ffcc00;font-size:20px;margin-top:22px;font-weight:bold;letter-spacing:2px;}
+.petals{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+
+<div id="carta-final-box">
+  <h2>💙 Para ti, con todo mi amor 💙</h2>
+  <p>Desde que llegaste a mi vida, estos dos meses se han sentido como algo mucho más grande que el tiempo. Contigo descubrí lo bonito de sonreír sin razón, de esperar un mensaje con emoción y de sentir paz solo con saber que estás ahí.</p>
+  <p>Gracias por cada momento, por cada palabra, por cada detalle y por hacer que incluso los días más simples se vuelvan especiales. No imaginas lo feliz que me haces ni lo mucho que significas para mí.</p>
+  <p>Aunque no te lo pedí como quería, lo hice con todo el deseo del mundo, porque después de todo este tiempo conociéndote entendí que eras tú con quien quería intentarlo de verdad.</p>
+  <p>Dos meses pueden parecer poco para otros, pero para mí significan muchísimo, porque detrás de ellos hay tantas conversaciones, momentos, risas y sentimientos que fueron creciendo poco a poco hasta convertirte en alguien indispensable en mi vida.</p>
+  <p>Gracias por quedarte, por hacerme sentir tan feliz y por demostrarme cada día lo bonito que es compartir mi tiempo contigo. No sabes lo especial que eres para mí ni lo mucho que valoro cada instante a tu lado.</p>
+  <p>Y ojalá esto apenas sea el comienzo de todo lo bonito que nos falta vivir juntos.</p>
+  <p>Armaste este rompecabezas pieza por pieza, igual que has ido armando mi corazón sin darte cuenta. Y ahora que está completo, quiero que sepas:</p>
+  <div class="firma">Felices 2 meses, mi amor.</div>
+  <div class="firma">Te amo mucho, hoy, mañana y siempre.💙</div>
+</div>
+
+<script>
+const petals=document.getElementById('petals');
+const symbols=['🌸','💛','✨','🌟','💫','🌼','⭐'];
+for(let i=0;i<35;i++){
+  const s=document.createElement('span');
+  s.style.cssText='position:absolute;top:-30px;font-size:'+(14+Math.random()*20)+'px;left:'+Math.random()*100+'%;animation:fall '+(3+Math.random()*5)+'s '+(Math.random()*4)+'s linear infinite;';
+  s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+  petals.appendChild(s);
+}
+</script>
+</body>
+</html>
