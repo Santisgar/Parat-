@@ -85,7 +85,8 @@ const phrases = [
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 2000);
-camera.position.set(0, 70, 180);
+camera.position.set(0, 30, 160);
+camera.lookAt(0, 0, 0);
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(devicePixelRatio);
@@ -144,11 +145,19 @@ phrases.forEach((p,i)=>{
   galaxy.add(obj);
   const div = document.createElement('div');
   div.className='lbl'; div.textContent=p.s;
-  div.onclick=()=>{
+  div.addEventListener('mouseup',()=>{
+    if(didMove) return;
     document.getElementById('ctitulo').textContent=p.s.toUpperCase();
     document.getElementById('cmensaje').textContent=p.l;
     document.getElementById('overlay').classList.add('on');
-  };
+  });
+  div.addEventListener('touchend',e=>{
+    if(didMove) return;
+    e.preventDefault();
+    document.getElementById('ctitulo').textContent=p.s.toUpperCase();
+    document.getElementById('cmensaje').textContent=p.l;
+    document.getElementById('overlay').classList.add('on');
+  });
   container.appendChild(div);
   anchors.push({obj,div});
 });
