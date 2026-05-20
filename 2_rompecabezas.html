@@ -15,15 +15,18 @@ body{display:flex;flex-direction:column;align-items:center;}
 #tray-wrap{flex-shrink:0;width:100%;display:flex;flex-direction:column;align-items:center;padding:0 0 8px;}
 #tray-label{color:rgba(255,204,0,0.5);font-size:10px;letter-spacing:1px;margin:4px 0 3px;text-align:center;}
 #tray-scroll{
-  width:100%;overflow-x:auto;overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;touch-action:pan-x;
+  width:100%;
+  overflow-x:scroll;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  /* touch-action:pan-x — NO lo ponemos aquí; lo manejamos manualmente */
   border:1px solid #2a2a2a;border-radius:8px;
   background:rgba(255,255,255,0.03);
 }
 #tray-scroll::-webkit-scrollbar{height:4px;}
 #tray-scroll::-webkit-scrollbar-track{background:transparent;}
 #tray-scroll::-webkit-scrollbar-thumb{background:#444;border-radius:2px;}
-#tray-canvas{display:block;cursor:grab;touch-action:none;}
+#tray-canvas{display:block;cursor:grab;}
 #drag-overlay{position:fixed;top:0;left:0;pointer-events:none;z-index:999;display:none;}
 </style>
 </head>
@@ -33,7 +36,7 @@ body{display:flex;flex-direction:column;align-items:center;}
 <div id="puzzle-subtitle">0 / 49 piezas colocadas</div>
 <div id="board-wrap"><canvas id="puzzle-canvas"></canvas></div>
 <div id="tray-wrap">
-  <div id="tray-label">PIEZAS — desliza para ver todas</div>
+  <div id="tray-label">← desliza para ver todas las piezas →</div>
   <div id="tray-scroll"><canvas id="tray-canvas"></canvas></div>
 </div>
 <canvas id="drag-overlay"></canvas>
@@ -49,7 +52,6 @@ let bCanvas, bCtx, tCanvas, tCtx, dCanvas, dCtx, trayScroll;
 let imgSrc, pieces = [], placed = 0;
 const E = {};
 
-/* ---- EDGES ---- */
 function seedEdges(){
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     if(c<COLS-1){const v=Math.random()<.5?1:-1;E[`${r},${c},R`]=v;E[`${r},${c+1},L`]=-v;}
@@ -60,7 +62,6 @@ function seedEdges(){
 }
 function edgesOf(r,c){return{T:E[`${r},${c},T`]||0,R:E[`${r},${c},R`]||0,B:E[`${r},${c},B`]||0,L:E[`${r},${c},L`]||0};}
 
-/* ---- JIGSAW PATH ---- */
 function jigsawPath(ctx,w,h,e){
   ctx.beginPath();ctx.moveTo(0,0);
   if(e.T===0){ctx.lineTo(w,0);}else{const s=e.T,mx=w/2,hw=w*TAB_W/2;ctx.lineTo(mx-hw,0);ctx.bezierCurveTo(mx-hw,-s*h*TAB_H*.5,mx-hw*.4,-s*h*TAB_H,mx,-s*h*TAB_H);ctx.bezierCurveTo(mx+hw*.4,-s*h*TAB_H,mx+hw,-s*h*TAB_H*.5,mx+hw,0);ctx.lineTo(w,0);}
@@ -71,8 +72,8 @@ function jigsawPath(ctx,w,h,e){
 }
 
 function drawPieceImage(ctx,p,ox,oy,w,h){
-  const iw=imgSrc.naturalWidth||imgSrc.width||400, ih=imgSrc.naturalHeight||imgSrc.height||400;
-  const sw=iw/COLS, sh=ih/ROWS, ex=h*TAB_H;
+  const iw=imgSrc.naturalWidth||imgSrc.width||400,ih=imgSrc.naturalHeight||imgSrc.height||400;
+  const sw=iw/COLS,sh=ih/ROWS,ex=h*TAB_H;
   ctx.drawImage(imgSrc,p.srcX-(sw/w)*ex,p.srcY-(sh/h)*ex,sw+(sw/w)*ex*2,sh+(sh/h)*ex*2,ox-ex,oy-ex,w+ex*2,h+ex*2);
 }
 
@@ -82,7 +83,6 @@ function renderPiece(ctx,p,ox,oy,w,h){
   ctx.save();ctx.translate(ox,oy);jigsawPath(ctx,w,h,e);ctx.strokeStyle='rgba(255,204,0,0.45)';ctx.lineWidth=1;ctx.stroke();ctx.restore();
 }
 
-/* ---- DRAW ---- */
 function drawBoard(){
   bCtx.clearRect(0,0,boardSize,boardSize);
   bCtx.fillStyle='#0d0d0d';bCtx.fillRect(0,0,boardSize,boardSize);
@@ -100,7 +100,7 @@ function drawTray(){
 
 function drawDragPiece(){
   dCtx.clearRect(0,0,dCanvas.width,dCanvas.height);
-  if(!dragging) return;
+  if(!dragging)return;
   const e=edgesOf(dragging.row,dragging.col),ox=dragX-dragOffX,oy=dragY-dragOffY;
   dCtx.save();dCtx.translate(ox,oy);dCtx.shadowColor='rgba(255,204,0,0.6)';dCtx.shadowBlur=18;
   jigsawPath(dCtx,cellW,cellH,e);dCtx.fillStyle='rgba(0,0,0,0.01)';dCtx.fill();dCtx.restore();
@@ -108,102 +108,50 @@ function drawDragPiece(){
   dCtx.save();dCtx.translate(ox,oy);jigsawPath(dCtx,cellW,cellH,e);dCtx.strokeStyle='#ffcc00';dCtx.lineWidth=2;dCtx.stroke();dCtx.restore();
 }
 
-/* ---- LAYOUT — se llama en init y en cada resize ---- */
 function computeLayout(){
-  const vw=window.innerWidth, vh=window.innerHeight;
-
-  // Medir alturas reales del DOM
-  const titleEl    = document.getElementById('puzzle-title');
-  const subtitleEl = document.getElementById('puzzle-subtitle');
-  const trayLabel  = document.getElementById('tray-label');
-  const headerH = titleEl.offsetHeight + subtitleEl.offsetHeight + 16; // +márgenes
-
-  // Fichas: entre 12-15% de la altura, acotado
-  TRAY_CELL = Math.max(50, Math.min(92, Math.floor(vh * 0.13)));
-  const trayAreaH  = TRAY_CELL + 8;
-  const trayTotalH = trayAreaH + trayLabel.offsetHeight + 8;
-
-  // Tablero
-  const boardAvailH = vh - headerH - trayTotalH - 8;
-  const boardAvailW = vw - 4;
-  const rawSize = Math.min(boardAvailW, boardAvailH);
-  boardSize = Math.floor(rawSize / COLS) * COLS;
-  cellW = boardSize / COLS;
-  cellH = boardSize / ROWS;
-
-  // Canvas tablero
-  bCanvas.width = bCanvas.height = boardSize;
-  bCanvas.style.width  = boardSize + 'px';
-  bCanvas.style.height = boardSize + 'px';
-
-  // Canvas bandeja
-  tCanvas.width  = TOTAL * TRAY_CELL;
-  tCanvas.height = TRAY_CELL;
-  tCanvas.style.height = TRAY_CELL + 'px';
-  trayScroll.style.height = trayAreaH + 'px';
-
-  // Overlay
-  dCanvas.width  = vw; dCanvas.height = vh;
-  dCanvas.style.width = vw+'px'; dCanvas.style.height = vh+'px';
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const titleEl=document.getElementById('puzzle-title');
+  const subtitleEl=document.getElementById('puzzle-subtitle');
+  const trayLabel=document.getElementById('tray-label');
+  const headerH=titleEl.offsetHeight+subtitleEl.offsetHeight+20;
+  TRAY_CELL=Math.max(50,Math.min(92,Math.floor(vh*0.13)));
+  const trayAreaH=TRAY_CELL+8;
+  const trayTotalH=trayAreaH+trayLabel.offsetHeight+8;
+  const boardAvailH=vh-headerH-trayTotalH-8;
+  const boardAvailW=vw-4;
+  boardSize=Math.floor(Math.min(boardAvailW,boardAvailH)/COLS)*COLS;
+  cellW=boardSize/COLS; cellH=boardSize/ROWS;
+  bCanvas.width=bCanvas.height=boardSize;
+  bCanvas.style.width=boardSize+'px'; bCanvas.style.height=boardSize+'px';
+  tCanvas.width=TOTAL*TRAY_CELL; tCanvas.height=TRAY_CELL;
+  tCanvas.style.height=TRAY_CELL+'px';
+  trayScroll.style.height=trayAreaH+'px';
+  dCanvas.width=vw; dCanvas.height=vh;
+  dCanvas.style.width=vw+'px'; dCanvas.style.height=vh+'px';
 }
 
-/* Recalcula posiciones de piezas tras resize, conservando estado placed/inTray */
 function repositionPieces(){
-  const iw=imgSrc.naturalWidth||imgSrc.width||700, ih=imgSrc.naturalHeight||imgSrc.height||700;
-  // Índice en bandeja de cada pieza (en orden de aparición en tray)
+  const iw=imgSrc.naturalWidth||imgSrc.width||700,ih=imgSrc.naturalHeight||imgSrc.height||700;
   let trayIdx=0;
   pieces.forEach(p=>{
-    p.tx = p.col * cellW;
-    p.ty = p.row * cellH;
-    p.srcX = p.col*(iw/COLS);
-    p.srcY = p.row*(ih/ROWS);
-    if(p.inTray){
-      p.trayX = trayIdx * TRAY_CELL;
-      p.trayY = 0;
-      trayIdx++;
-    }
+    p.tx=p.col*cellW; p.ty=p.row*cellH;
+    p.srcX=p.col*(iw/COLS); p.srcY=p.row*(ih/ROWS);
+    if(p.inTray){p.trayX=trayIdx*TRAY_CELL;p.trayY=0;trayIdx++;}
   });
 }
 
-/* ---- INIT ---- */
-window.addEventListener('load', init);
+window.addEventListener('load',init);
 
 function init(){
-  bCanvas    = document.getElementById('puzzle-canvas');  bCtx = bCanvas.getContext('2d');
-  tCanvas    = document.getElementById('tray-canvas');    tCtx = tCanvas.getContext('2d');
-  dCanvas    = document.getElementById('drag-overlay');   dCtx = dCanvas.getContext('2d');
-  trayScroll = document.getElementById('tray-scroll');
-
-  seedEdges();
-  computeLayout();
-  loadImage();
-  setupResize();
+  bCanvas=document.getElementById('puzzle-canvas'); bCtx=bCanvas.getContext('2d');
+  tCanvas=document.getElementById('tray-canvas');   tCtx=tCanvas.getContext('2d');
+  dCanvas=document.getElementById('drag-overlay');  dCtx=dCanvas.getContext('2d');
+  trayScroll=document.getElementById('tray-scroll');
+  seedEdges(); computeLayout(); loadImage();
+  let rt=null;
+  window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(imgSrc){computeLayout();repositionPieces();drawBoard();drawTray();}},150);});
 }
 
-/* ---- RESIZE ---- */
-let resizeTimer=null;
-function setupResize(){
-  window.addEventListener('resize', ()=>{
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(onResize, 120);
-  });
-  // Orientación en móvil
-  screen.orientation && screen.orientation.addEventListener('change', ()=>{
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(onResize, 200);
-  });
-}
-
-function onResize(){
-  if(!imgSrc) return;
-  computeLayout();
-  repositionPieces();
-  drawBoard();
-  drawTray();
-  if(dragging){ dragX=0;dragY=0;dragging.inTray=true;dragging=null;dCanvas.style.display='none'; }
-}
-
-/* ---- IMAGEN ---- */
 function loadImage(){
   imgSrc=new Image(); imgSrc.crossOrigin='anonymous';
   imgSrc.src=FOTO_URL; imgSrc.onload=buildPieces; imgSrc.onerror=fallback;
@@ -222,42 +170,38 @@ function fallback(){
 function buildPieces(){
   pieces=[];placed=0;
   const order=Array.from({length:TOTAL},(_,i)=>i).sort(()=>Math.random()-.5);
-  const iw=imgSrc.naturalWidth||imgSrc.width||700, ih=imgSrc.naturalHeight||imgSrc.height||700;
+  const iw=imgSrc.naturalWidth||imgSrc.width||700,ih=imgSrc.naturalHeight||imgSrc.height||700;
   for(let i=0;i<TOTAL;i++){
     const id=order[i],r=Math.floor(id/COLS),c=id%COLS;
-    pieces.push({
-      id,row:r,col:c,
-      srcX:c*(iw/COLS),srcY:r*(ih/ROWS),
-      tx:c*cellW,ty:r*cellH,
-      trayX:i*TRAY_CELL,trayY:0,
-      placed:false,inTray:true,
-    });
+    pieces.push({id,row:r,col:c,srcX:c*(iw/COLS),srcY:r*(ih/ROWS),tx:c*cellW,ty:r*cellH,trayX:i*TRAY_CELL,trayY:0,placed:false,inTray:true});
   }
   drawBoard();drawTray();setupEvents();
 }
 
-/* ---- DRAG ---- */
+/* ============================================================
+   DRAG & SCROLL
+   Estrategia:
+   - El scroll nativo del div funciona siempre excepto cuando
+     detectamos un arrastre vertical claro (dy > dx * 1.2 y dy > 10px).
+   - Usamos un long-press (300ms) también como forma de iniciar drag.
+   - Si el toque termina sin moverse → tap simple (no hace nada en bandeja).
+   ============================================================ */
 let dragging=null,dragX=0,dragY=0,dragOffX=0,dragOffY=0;
 
 function trayCanvasPos(clientX,clientY){
-  const scrollRect=trayScroll.getBoundingClientRect();
-  const lx=(clientX-scrollRect.left)+trayScroll.scrollLeft;
-  const ly=(clientY-scrollRect.top);
-  const scaleX=tCanvas.width/tCanvas.offsetWidth;
-  const scaleY=tCanvas.height/tCanvas.offsetHeight;
-  return{lx:lx*scaleX,ly:ly*scaleY};
+  const r=trayScroll.getBoundingClientRect();
+  const lx=(clientX-r.left)+trayScroll.scrollLeft;
+  const ly=(clientY-r.top);
+  return{lx:lx*(tCanvas.width/tCanvas.offsetWidth),ly:ly*(tCanvas.height/tCanvas.offsetHeight)};
 }
 
 function pieceAtTray(clientX,clientY){
   const{lx,ly}=trayCanvasPos(clientX,clientY);
-  return pieces.find(p=>
-    p.inTray&&!p.placed&&
-    lx>=p.trayX&&lx<p.trayX+TRAY_CELL&&
-    ly>=p.trayY&&ly<p.trayY+TRAY_CELL
-  )||null;
+  return pieces.find(p=>p.inTray&&!p.placed&&lx>=p.trayX&&lx<p.trayX+TRAY_CELL&&ly>=p.trayY&&ly<p.trayY+TRAY_CELL)||null;
 }
 
 function startDrag(p,clientX,clientY){
+  if(!p||dragging)return;
   dragging=p; p.inTray=false;
   const{lx,ly}=trayCanvasPos(clientX,clientY);
   const pw=TRAY_CELL-TRAY_PAD*2,ph=TRAY_CELL-TRAY_PAD*2;
@@ -268,77 +212,8 @@ function startDrag(p,clientX,clientY){
   drawTray();drawDragPiece();
 }
 
-/* ---- EVENTS ---- */
-function setupEvents(){
-  tCanvas.addEventListener('mousedown',onTrayMouseDown);
-  window.addEventListener('mousemove',onMouseMove);
-  window.addEventListener('mouseup',onMouseUp);
-  trayScroll.addEventListener('touchstart',onScrollTouchStart,{passive:true});
-  trayScroll.addEventListener('touchmove',onScrollTouchMove,{passive:false});
-  trayScroll.addEventListener('touchend',onScrollTouchEnd,{passive:true});
-  window.addEventListener('touchmove',onGlobalTouchMove,{passive:false});
-  window.addEventListener('touchend',onGlobalTouchEnd,{passive:true});
-}
-
-function onTrayMouseDown(e){
-  const p=pieceAtTray(e.clientX,e.clientY);if(!p)return;
-  e.preventDefault();startDrag(p,e.clientX,e.clientY);
-}
-function onMouseMove(e){if(!dragging)return;dragX=e.clientX;dragY=e.clientY;drawDragPiece();}
-function onMouseUp(e){if(!dragging)return;dropPiece(e.clientX,e.clientY);}
-
-let touchId=null,touchStartX=0,touchStartY=0,touchPiece=null,touchIntent=null;
-
-function onScrollTouchStart(e){
-  if(dragging||touchId!==null)return;
-  const t=e.changedTouches[0];
-  touchId=t.identifier;touchStartX=t.clientX;touchStartY=t.clientY;
-  touchIntent=null;touchPiece=pieceAtTray(t.clientX,t.clientY);
-}
-
-function onScrollTouchMove(e){
-  if(dragging)return;if(touchId===null)return;
-  let t=null;
-  for(let i=0;i<e.changedTouches.length;i++) if(e.changedTouches[i].identifier===touchId){t=e.changedTouches[i];break;}
-  if(!t)return;
-  const dx=Math.abs(t.clientX-touchStartX),dy=Math.abs(t.clientY-touchStartY);
-  if(!touchIntent){
-    if(dx<3&&dy<3)return;
-    touchIntent=(dx>dy*1.5)?'scroll':'drag';
-  }
-  if(touchIntent==='drag'){
-    e.preventDefault();
-    if(!dragging&&touchPiece) startDrag(touchPiece,touchStartX,touchStartY);
-    if(dragging){dragX=t.clientX;dragY=t.clientY;drawDragPiece();}
-  }
-}
-
-function onScrollTouchEnd(e){
-  if(dragging)return;if(touchId===null)return;
-  if(touchIntent===null&&touchPiece){
-    startDrag(touchPiece,touchStartX,touchStartY);
-    dropPiece(touchStartX,touchStartY);
-  }
-  touchId=null;touchPiece=null;touchIntent=null;
-}
-
-function onGlobalTouchMove(e){
-  if(!dragging)return;
-  let t=null;
-  for(let i=0;i<e.changedTouches.length;i++) if(e.changedTouches[i].identifier===touchId){t=e.changedTouches[i];break;}
-  if(!t)t=e.changedTouches[0];if(!t)return;
-  e.preventDefault();dragX=t.clientX;dragY=t.clientY;drawDragPiece();
-}
-
-function onGlobalTouchEnd(e){
-  if(!dragging)return;
-  let t=null;
-  for(let i=0;i<e.changedTouches.length;i++) if(e.changedTouches[i].identifier===touchId){t=e.changedTouches[i];break;}
-  dropPiece(t?t.clientX:dragX,t?t.clientY:dragY);
-  touchId=null;touchPiece=null;touchIntent=null;
-}
-
 function dropPiece(clientX,clientY){
+  if(!dragging)return;
   const bRect=bCanvas.getBoundingClientRect();
   const lx=(clientX-bRect.left)*(boardSize/bRect.width);
   const ly=(clientY-bRect.top)*(boardSize/bRect.height);
@@ -347,13 +222,105 @@ function dropPiece(clientX,clientY){
     if(Math.abs(dx)<cellW*.45&&Math.abs(dy)<cellH*.45){
       dragging.placed=true;dragging.inTray=false;placed++;
       document.getElementById('puzzle-subtitle').textContent=placed+' / '+TOTAL+' piezas colocadas';
-      if(placed===TOTAL) setTimeout(()=>{window.location.href='3_carta.html';},700);
+      if(placed===TOTAL)setTimeout(()=>{window.location.href='3_carta.html';},700);
     } else {dragging.inTray=true;}
   } else {dragging.inTray=true;}
   dragging=null;
   dCanvas.style.display='none';
   dCtx.clearRect(0,0,dCanvas.width,dCanvas.height);
   drawBoard();drawTray();
+}
+
+function setupEvents(){
+  /* ----- MOUSE ----- */
+  tCanvas.addEventListener('mousedown',e=>{
+    const p=pieceAtTray(e.clientX,e.clientY);if(!p)return;
+    e.preventDefault();startDrag(p,e.clientX,e.clientY);
+  });
+  window.addEventListener('mousemove',e=>{if(!dragging)return;dragX=e.clientX;dragY=e.clientY;drawDragPiece();});
+  window.addEventListener('mouseup',e=>{dropPiece(e.clientX,e.clientY);});
+
+  /* ----- TOUCH en la bandeja ----- */
+  // Variables de estado por toque
+  let tid=null,tx0=0,ty0=0,tPiece=null,tDragging=false,longPressTimer=null;
+
+  function cancelLongPress(){clearTimeout(longPressTimer);longPressTimer=null;}
+
+  trayScroll.addEventListener('touchstart',e=>{
+    if(tid!==null)return;
+    const t=e.changedTouches[0];
+    tid=t.identifier; tx0=t.clientX; ty0=t.clientY;
+    tDragging=false;
+    tPiece=pieceAtTray(t.clientX,t.clientY);
+    // Long-press: iniciar drag después de 300ms sin moverse
+    if(tPiece){
+      longPressTimer=setTimeout(()=>{
+        longPressTimer=null;
+        tDragging=true;
+        startDrag(tPiece,tx0,ty0);
+        dragX=tx0;dragY=ty0;drawDragPiece();
+      },300);
+    }
+  },{passive:true});
+
+  trayScroll.addEventListener('touchmove',e=>{
+    let t=null;
+    for(let i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===tid){t=e.changedTouches[i];break;}
+    if(!t)return;
+
+    const dx=t.clientX-tx0, dy=t.clientY-ty0;
+    const adx=Math.abs(dx), ady=Math.abs(dy);
+
+    if(!tDragging){
+      // Aún no decidimos qué hacer
+      if(adx<5&&ady<5)return; // quieto todavía
+
+      // Si hay más movimiento horizontal que vertical → es scroll; cancelar long-press
+      if(adx>ady){cancelLongPress();tid=null;tPiece=null;return;}
+
+      // Movimiento predominantemente vertical con pieza debajo → drag
+      if(tPiece&&ady>adx&&ady>8){
+        cancelLongPress();
+        e.preventDefault();
+        tDragging=true;
+        startDrag(tPiece,tx0,ty0);
+      } else if(!tPiece){
+        // Sin pieza debajo → dejar hacer scroll (no preventDefault)
+        cancelLongPress();tid=null;return;
+      }
+    }
+
+    if(tDragging&&dragging){
+      e.preventDefault();
+      dragX=t.clientX;dragY=t.clientY;drawDragPiece();
+    }
+  },{passive:false});
+
+  trayScroll.addEventListener('touchend',e=>{
+    cancelLongPress();
+    let t=null;
+    for(let i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===tid){t=e.changedTouches[i];break;}
+    if(tDragging&&dragging&&t)dropPiece(t.clientX,t.clientY);
+    else if(dragging)dropPiece(dragX,dragY);
+    tid=null;tPiece=null;tDragging=false;
+  },{passive:true});
+
+  /* Mover pieza cuando el dedo sale del área de bandeja */
+  window.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    let t=null;
+    for(let i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===tid){t=e.changedTouches[i];break;}
+    if(!t)t=e.changedTouches[0];if(!t)return;
+    e.preventDefault();dragX=t.clientX;dragY=t.clientY;drawDragPiece();
+  },{passive:false});
+
+  window.addEventListener('touchend',e=>{
+    if(!dragging)return;
+    let t=null;
+    for(let i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===tid){t=e.changedTouches[i];break;}
+    dropPiece(t?t.clientX:dragX,t?t.clientY:dragY);
+    tid=null;tPiece=null;tDragging=false;
+  },{passive:true});
 }
 </script>
 </body>
