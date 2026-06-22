@@ -159,7 +159,7 @@ canvas{display:block;position:fixed;top:0;left:0;width:100%;height:100%;}
 <div id="hint">Toca cualquier frase ✦ Arrastra para girar</div>
 <div id="progress-bar">
   <span id="progress-text">0 / 30 leídos</span>
-  <button id="btn-next" onclick="irAlRompecabezas()">¡Continuar al rompecabezas! ✨</button>
+  <button id="btn-next" onclick="irAlRompecabezas()">¡Continuar al panel de rompecabezas! ✨</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -297,7 +297,7 @@ function openMsg(p,i,div){
 }
 
 function irAlRompecabezas(){
-  window.location.href='2_rompecabezas.html';
+  window.location.href='panel.html';
 }
 
 document.getElementById('cerrar').onclick=()=>document.getElementById('overlay').classList.remove('on');
