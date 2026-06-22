@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tres meses💙</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+#carta-final-box{position:relative;z-index:2;width:100%;max-width:480px;padding:42px 38px;background:linear-gradient(145deg,#0d0d0d,#000);border:2px solid #ffcc00;border-radius:24px;color:#fff;text-align:center;box-shadow:0 0 80px rgba(255,204,0,0.4);animation:pop 0.7s ease;}
+@keyframes pop{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
+h2{color:#ffcc00;font-size:22px;letter-spacing:3px;margin-bottom:22px;}
+p{line-height:2;font-size:15px;font-style:italic;color:#e0e0e0;margin-bottom:14px;}
+.firma{color:#ffcc00;font-size:20px;margin-top:22px;font-weight:bold;letter-spacing:2px;}
+.petals{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+
+<div id="carta-final-box">
+  <h2>💙 Tres meses. 💙</h2>
+  <p>Puede parecer poco tiempo desde que decidimos estar juntos, pero la verdad es que nuestra historia empezó mucho antes. Antes de los "te amo", antes de las fechas y antes de que pudiéramos llamarnos novios, ya existían las conversaciones, la confianza, las risas y todos esos momentos que nos fueron acercando poco a poco.</p>
+  <p>Por eso estos tres meses significan tanto para mí. Porque no celebran solo el tiempo que llevamos como pareja, sino también todo el camino que recorrimos para llegar hasta aquí.</p>
+  <p>Gracias por cada sonrisa que me regalas, por acompañarme en los días buenos y en los difíciles, por escucharme, entenderme y hacerme sentir querido de una manera que nunca había experimentado. Contigo aprendí que el amor no se trata solo de grandes momentos, sino también de los pequeños detalles que hacen que cada día valga la pena.</p>
+  <p>Si hace unos meses me hubieran preguntado qué quería para mi futuro, no habría sabido responder. Hoy tengo una respuesta muy clara: seguir compartiendo mi tiempo contigo, seguir creando recuerdos a tu lado y seguir eligiéndote cada día.</p>
+  <p>Felices 3 meses, mi amor. Gracias por estos meses tan bonitos y por todo lo que hemos vivido desde mucho antes. Te amo más de lo que las palabras pueden explicar. 💛</p>
+  <p>Y si algo tengo claro después de todo este tiempo, es que no me arrepiento de haberte elegido. Cada día encuentro una nueva razón para admirarte, para quererte más y para sentirme afortunado de tenerte en mi vida. No sé qué nos depare el futuro, pero sí sé que quiero seguir construyéndolo contigo, creando recuerdos, superando obstáculos y celebrando cada momento a tu lado.</p>
+  <div class="firma">Felices 3 meses, mi cachetona.</div>
+</div>
+
+<script>
+const petals=document.getElementById('petals');
+const symbols=['🌸','💛','✨','🌟','💫','🌼','⭐'];
+for(let i=0;i<35;i++){
+  const s=document.createElement('span');
+  s.style.cssText='position:absolute;top:-30px;font-size:'+(14+Math.random()*20)+'px;left:'+Math.random()*100+'%;animation:fall '+(3+Math.random()*5)+'s '+(Math.random()*4)+'s linear infinite;';
+  s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+  petals.appendChild(s);
+}
+</script>
+</body>
+</html>
