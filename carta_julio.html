@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuatro meses 💜</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;500&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --purple-deep:   #0e0a1a;
+  --purple-dark:   #150d2a;
+  --purple-mid:    #3a1f6e;
+  --purple-glow:   #7c3aed;
+  --purple-light:  #c084fc;
+  --purple-pale:   #e9d5ff;
+  --gold:          #d4a843;
+  --white:         #f5f0ff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--purple-deep);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 60px 20px;
+  position: relative;
+}
+
+/* Ambient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(124,58,237,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(124,58,237,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(58,31,110,0.25) 0%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Falling petals */
+.petals {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+@keyframes fall {
+  0%   { transform: translateY(-40px) rotate(0deg);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* Letter card */
+.carta {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 520px;
+  padding: 56px 48px;
+  background: linear-gradient(160deg, #1a0f35 0%, #0e0a1a 60%, #130b28 100%);
+  border: 1px solid rgba(192, 132, 252, 0.3);
+  border-radius: 4px;
+  color: var(--white);
+  text-align: center;
+  box-shadow:
+    0 0 0 1px rgba(124,58,237,0.08),
+    0 0 60px rgba(124,58,237,0.2),
+    0 0 120px rgba(124,58,237,0.08),
+    inset 0 1px 0 rgba(192,132,252,0.15);
+  animation: appear 1.2s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Top ornament */
+.ornament {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--purple-light);
+  opacity: 0.6;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.ornament::before,
+.ornament::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192,132,252,0.5));
+}
+.ornament::after { transform: scaleX(-1); }
+
+/* Heading */
+h2 {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: 4px;
+  color: var(--purple-pale);
+  margin-bottom: 10px;
+  text-shadow: 0 0 40px rgba(192,132,252,0.5);
+}
+
+.subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--purple-light);
+  opacity: 0.55;
+  letter-spacing: 2px;
+  margin-bottom: 40px;
+}
+
+/* Divider */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192,132,252,0.35), transparent);
+  margin: 32px 0;
+}
+
+/* Body text */
+p {
+  font-size: 16.5px;
+  line-height: 2;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(233, 213, 255, 0.85);
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+p:first-of-type::first-letter {
+  font-size: 52px;
+  font-style: normal;
+  font-weight: 300;
+  float: left;
+  line-height: 0.8;
+  margin: 6px 10px 0 0;
+  color: var(--purple-light);
+  text-shadow: 0 0 30px rgba(192,132,252,0.6);
+}
+
+/* Signature */
+.firma-wrap {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.firma-line {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,168,67,0.6), transparent);
+}
+
+.firma {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(212,168,67,0.4);
+}
+
+/* Bottom ornament */
+.ornament-bottom {
+  margin-top: 40px;
+  font-size: 18px;
+  letter-spacing: 8px;
+  opacity: 0.4;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .carta { padding: 40px 28px; }
+  h2 { font-size: 20px; letter-spacing: 3px; }
+  p { font-size: 15.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carta { animation: none; }
+  @keyframes fall { to { transform: translateY(110vh); opacity: 0; } }
+}
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+
+<div class="carta">
+  <div class="ornament">Cuatro meses</div>
+
+  <h2>💜 Para ti 💜</h2>
+  <p class="subtitle">con todo lo que no siempre sé decir en voz alta</p>
+
+  <div class="divider"></div>
+
+  <p>Hoy cumplimos cuatro meses, y mientras pensaba en qué escribirte, me di cuenta de que no quería repetir las mismas palabras de siempre. Porque lo que siento por ti ha cambiado, ha crecido y se ha vuelto mucho más grande de lo que era al principio.</p>
+
+  <p>Hay personas que llegan a la vida para quedarse un momento, y hay otras que llegan para cambiar la forma en la que vemos el mundo. Tú has sido esa persona para mí. Sin hacer ruido, sin intentar ser alguien que no eres, lograste convertirte en mi lugar favorito. Contigo aprendí que la tranquilidad también puede sentirse como amor, que una conversación puede alegrarte el día y que un simple "¿cómo estás?" puede significar muchísimo cuando viene de la persona correcta.</p>
+
+  <p>Lo que más me gusta de nosotros es que nuestra historia no se basa en momentos perfectos, sino en momentos reales. En las risas inesperadas, en las bromas que solo nosotros entendemos, en las conversaciones largas, en los silencios que no incomodan y hasta en las pequeñas diferencias que nos enseñan a conocernos mejor. Todo eso hace que lo nuestro tenga un valor que no cambiaría por nada.</p>
+
+  <p>Gracias por confiar en mí, por abrirme un espacio en tu corazón y por permitirme conocer cada parte de ti. Gracias por estar presente incluso cuando no sabes que te necesito. Gracias por hacerme sentir importante con gestos tan sencillos que, para mí, significan muchísimo.</p>
+
+  <p>Si alguien me preguntara qué es lo que más valoro de ti, no sabría responder con una sola cosa. Admiró tu forma de ser, tu manera de ver la vida, tu sonrisa, tu corazón y la paz que transmites. Me encanta saber que detrás de cada día existe la posibilidad de hablar contigo y compartir un pedacito de mi vida.</p>
+  
+  <p>Cuatro meses no definen todo lo que hemos construido, pero sí representan cuatro meses de elegirnos, de aprender el uno del otro y de demostrar que el cariño también se construye con paciencia, respeto y pequeños detalles. Y eso me hace sentir muy orgulloso de lo que somos.</p>
+  
+  <p>No quiero prometerte una vida perfecta, porque sé que ninguna historia lo es. Lo que sí puedo prometerte es que siempre intentaré ser alguien que te haga sonreír, que te escuche cuando lo necesites, que te apoye cuando las cosas se compliquen y que celebre contigo cada alegría, por pequeña que parezca. Quiero seguir siendo esa persona con la que puedas sentirte segura, tranquila y feliz.</p>
+
+  <p>Hoy no solo celebro cuatro meses de novios. Celebro la suerte que tuve al encontrarte, la decisión que tomamos de comenzar esta historia y cada recuerdo que hemos creado desde entonces. Espero que este sea apenas un pequeño capítulo de todo lo bonito que aún nos queda por escribir.</p>
+
+  <p>Gracias por cada abrazo, cada palabra, cada risa y cada instante que me has regalado. Eres una persona increíble, y cada día que pasa tengo una razón más para agradecer que estés en mi vida. Te amo con todo mi corazón, y espero seguir celebrando muchos meses, muchos años y muchísimos recuerdos más contigo.</p>
+
+  <div class="divider"></div>
+
+  <div class="firma-wrap">
+    <div class="firma-line"></div>
+    <div class="firma">Felishes 4 meses, mi pinshesha.</div>
+    <div class="firma-line"></div>
+  </div>
+
+  <div class="ornament-bottom">✦ ✦ ✦</div>
+</div>
+
+<script>
+const petals = document.getElementById('petals');
+const symbols = ['💜','✨','🌟','💫','⭐','🔮','💎'];
+for (let i = 0; i < 30; i++) {
+  const s = document.createElement('span');
+  const size = 12 + Math.random() * 16;
+  const duration = 5 + Math.random() * 7;
+  const delay = Math.random() * 6;
+  s.style.cssText =
+    `position:absolute;top:-40px;font-size:${size}px;` +
+    `left:${Math.random() * 100}%;` +
+    `animation:fall ${duration}s ${delay}s linear infinite;` +
+    `opacity:0;`;
+  s.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+  petals.appendChild(s);
+}
+</script>
+</body>
+</html>
