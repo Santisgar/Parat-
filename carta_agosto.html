@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinco meses · Amanecer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Caveat:wght@500;600&family=Jost:wght@300;400;500&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --sky-top:     #4a3b6b;
+  --sky-mid:     #b06b7a;
+  --sky-low:     #f0a97a;
+  --sun:         #ffd68a;
+  --paper:       #fbf3e6;
+  --paper-edge:  #ecdcc2;
+  --ink:         #4a3628;
+  --ink-soft:    #7a6250;
+  --wax:         #9c3b3b;
+  --wax-dark:    #7a2c2c;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 16px;
+  font-family: 'Jost', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%);
+}
+
+/* Sun */
+.sun {
+  position: fixed;
+  left: 50%;
+  bottom: -60px;
+  width: 220px;
+  height: 220px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, var(--sun) 0%, rgba(255,214,138,0.4) 55%, transparent 75%);
+  border-radius: 50%;
+  z-index: 0;
+  animation: rise 2.4s cubic-bezier(0.22,1,0.36,1) both;
+  filter: blur(2px);
+}
+@keyframes rise {
+  from { bottom: -160px; opacity: 0; }
+  to   { bottom: -60px; opacity: 1; }
+}
+
+/* Birds */
+.bird {
+  position: fixed;
+  z-index: 1;
+  opacity: 0.55;
+  font-size: 13px;
+  color: var(--paper);
+  animation: fly linear infinite;
+}
+@keyframes fly {
+  from { transform: translateX(-10vw); }
+  to   { transform: translateX(110vw); }
+}
+
+/* Letter card = paper with deckle edge feel */
+.carta-outer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 500px;
+}
+
+.carta {
+  background: var(--paper);
+  padding: 60px 46px 50px;
+  border-radius: 3px;
+  color: var(--ink);
+  position: relative;
+  box-shadow:
+    0 30px 70px rgba(30, 15, 30, 0.35),
+    0 4px 0 var(--paper-edge);
+  animation: appear 1s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(20px) rotate(-0.6deg); }
+  to   { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+/* torn/deckled edge using layered box-shadow dots - simplified with a jagged clip */
+.carta {
+  clip-path: polygon(
+    0% 1%, 3% 0%, 8% 1%, 14% 0%, 20% 1%, 27% 0%, 34% 1%, 41% 0%, 48% 1%,
+    55% 0%, 62% 1%, 69% 0%, 76% 1%, 83% 0%, 90% 1%, 96% 0%, 100% 1%,
+    100% 99%, 96% 100%, 90% 99%, 83% 100%, 76% 99%, 69% 100%, 62% 99%,
+    55% 100%, 48% 99%, 41% 100%, 34% 99%, 27% 100%, 20% 99%, 14% 100%,
+    8% 99%, 3% 100%, 0% 99%
+  );
+}
+
+/* Wax seal */
+.seal-wrap {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  animation: sealOpen 0.9s ease-in 1.6s both;
+}
+@keyframes sealOpen {
+  0%   { transform: translateX(-50%) rotate(0deg) scale(1); opacity: 1; }
+  60%  { transform: translateX(-50%) rotate(35deg) scale(1.05); opacity: 1; }
+  100% { transform: translateX(-50%) rotate(50deg) scale(0.9); opacity: 0; }
+}
+.seal {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #b34848, var(--wax) 55%, var(--wax-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  color: #f0d9c0;
+  font-size: 18px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+}
+
+.eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: 8px 0 6px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: 32px;
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  text-align: center;
+  color: var(--wax);
+  margin-bottom: 34px;
+}
+
+.rule {
+  width: 60px;
+  height: 2px;
+  background: var(--wax);
+  opacity: 0.5;
+  margin: 0 auto 34px;
+}
+
+p {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 16.5px;
+  line-height: 1.9;
+  color: var(--ink);
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+p:first-of-type::first-letter {
+  font-family: 'Fraunces', serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 54px;
+  float: left;
+  line-height: 0.75;
+  margin: 6px 8px 0 0;
+  color: var(--wax);
+}
+
+.tag {
+  font-family: 'Caveat', cursive;
+  font-size: 20px;
+  color: var(--wax);
+  text-align: center;
+  display: block;
+  margin: 28px 0 16px;
+}
+
+.firma-wrap {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.firma {
+  font-family: 'Caveat', cursive;
+  font-size: 30px;
+  color: var(--ink);
+}
+
+.ps {
+  margin-top: 26px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 500px) {
+  .carta { padding: 50px 28px 40px; }
+  h1 { font-size: 25px; }
+  p { font-size: 15.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sun, .carta, .seal-wrap, .bird { animation: none !important; }
+  .sun { bottom: -60px; opacity: 1; }
+  .seal-wrap { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div id="birds"></div>
+
+<div class="carta-outer">
+  <div class="carta">
+    <div class="seal-wrap"><div class="seal">✦</div></div>
+
+    <div class="eyebrow">Cinco meses</div>
+    <h1>Como amanece hoy</h1>
+    <div class="subtitle">sin prisa, pero sin pausa</div>
+    <div class="rule"></div>
+
+    <p>Hay días que empiezan como cualquier otro y terminan quedándose para siempre. Así empezó lo nuestro: sin anuncios, sin fecha marcada en rojo, simplemente un día cualquiera que decidió no irse. Hoy son cinco meses de eso, y todavía me sorprende lo natural que se siente tenerte cerca.</p>
+
+    <p>Me gusta pensar en nosotros como se piensa en un amanecer: no llega de golpe, no interrumpe la noche a la fuerza, va ganando espacio poco a poco hasta que un día miras alrededor y todo está iluminado. Así fuiste llegando tú, sin prisa, sin exigir nada, hasta ocupar un lugar que ahora no sé cómo estaba antes de ti.</p>
+
+    <span class="tag">✦ lo que se quedó ✦</span>
+
+    <p>Se quedaron las llamadas que no tenían un motivo claro más que querer escucharte. Se quedó la costumbre de contarte primero las cosas buenas. Se quedó esa sensación rara de tranquilidad que solo aparece cuando sé que estás bien. Cinco meses después, sigo sin encontrar una palabra mejor que esa: tranquilidad, pero de la buena, de la que no se cansa.</p>
+
+    <p>No te voy a decir que todo ha sido perfecto, porque sería mentira y esto nunca se ha tratado de mentiras. Ha habido días torpes, malentendidos pequeños, momentos en los que ninguno supo qué decir. Pero también ha habido algo más importante: ganas reales de seguir intentándolo, de aclarar en vez de callar, de volver a empezar el día siguiente como si nada hubiera pasado, porque en realidad nada grave pasó.</p>
+
+    <span class="tag">✦ para lo que sigue ✦</span>
+
+    <p>No sé cuántos amaneceres más nos esperan, pero sé que quiero seguir viéndolos contigo, aunque sea desde lejos, aunque sea solo con un mensaje al despertar. Gracias por estos cinco meses de elegirnos sin necesitar razones grandes. Gracias por hacer que algo tan simple como un día cualquiera se sienta, contigo, como el mejor momento del calendario.</p>
+
+    <div class="firma-wrap">
+      <div class="firma">Feliz cinco meshes, mi pookie.</div>
+    </div>
+
+    
+</div>
+
+<script>
+const birdsContainer = document.getElementById('birds');
+const glyphs = ['⌢','∽','〜'];
+for (let i = 0; i < 6; i++) {
+  const b = document.createElement('div');
+  b.className = 'bird';
+  b.textContent = glyphs[i % glyphs.length];
+  b.style.top = (10 + Math.random() * 30) + 'vh';
+  b.style.animationDuration = (18 + Math.random() * 14) + 's';
+  b.style.animationDelay = (Math.random() * 10) + 's';
+  b.style.fontSize = (10 + Math.random() * 6) + 'px';
+  birdsContainer.appendChild(b);
+}
+</script>
+</body>
+</html>
