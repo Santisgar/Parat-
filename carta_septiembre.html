@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seis meses · Mesiversario</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Gloria+Hallelujah&family=Schoolbell&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --news:      #fdf6e3;
+  --news-dark: #f2e7cd;
+  --ink:       #1a1a1a;
+  --red:       #d94f47;
+  --yellow:    #f2c14e;
+}
+
+body {
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 4px),
+    var(--news-dark);
+  font-family: 'Patrick Hand', cursive;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 14px;
+  color: var(--ink);
+}
+
+.tira {
+  width: 100%;
+  max-width: 540px;
+  background: var(--news);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 8px 8px 0 rgba(26,26,26,0.85);
+  overflow: hidden;
+  animation: pop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(18px) rotate(-1deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Header strip */
+.cabecera {
+  border-bottom: 3px solid var(--ink);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--yellow);
+}
+.cabecera .titulo {
+  font-family: 'Gloria Hallelujah', cursive;
+  font-size: 17px;
+}
+.cabecera .fecha {
+  font-family: 'Schoolbell', cursive;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Panels */
+.panel {
+  border-bottom: 3px solid var(--ink);
+  padding: 22px 24px;
+  position: relative;
+}
+.panel:last-of-type { border-bottom: none; }
+
+.panel-num {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-family: 'Schoolbell', cursive;
+  font-size: 12px;
+  opacity: 0.35;
+}
+
+/* Image frame — comic panel style */
+.foto-marco {
+  width: 100%;
+  max-width: 260px;
+  margin: 4px auto 16px;
+  border: 3px solid var(--ink);
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px;
+  box-shadow: 4px 4px 0 rgba(26,26,26,0.7);
+}
+.foto-marco img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+/* fallback shown if the image file isn't found yet */
+.foto-marco img::before {
+  content: '';
+}
+.foto-fallback {
+  display: none;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Schoolbell', cursive;
+  font-size: 13px;
+  color: #9a8f78;
+  background: repeating-linear-gradient(45deg, #f4ecd8, #f4ecd8 10px, #ece1c8 10px, #ece1c8 20px);
+  border-radius: 2px;
+  padding: 10px;
+}
+.foto-marco.small { max-width: 190px; }
+.foto-marco.right { float: right; margin: 4px 0 12px 18px; }
+.foto-marco.left  { float: left;  margin: 4px 18px 12px 0; }
+
+p {
+  font-size: 18px;
+  line-height: 1.75;
+  margin-bottom: 14px;
+}
+p:last-child { margin-bottom: 0; }
+
+.clear { clear: both; }
+
+/* Speech bubble */
+.bocadillo {
+  position: relative;
+  background: #fff;
+  border: 2.5px solid var(--ink);
+  border-radius: 18px;
+  padding: 14px 18px;
+  font-size: 18px;
+  line-height: 1.7;
+  margin: 6px 0 18px;
+  clear: both;
+}
+.bocadillo::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 34px;
+  width: 0; height: 0;
+  border: 8px solid transparent;
+  border-top-color: var(--ink);
+}
+.bocadillo::before {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 36px;
+  width: 0; height: 0;
+  border: 7px solid transparent;
+  border-top-color: #fff;
+  z-index: 1;
+}
+
+.grito {
+  font-family: 'Gloria Hallelujah', cursive;
+  font-size: 21px;
+  color: var(--red);
+  text-align: center;
+  margin: 6px 0 14px;
+  clear: both;
+}
+
+.firma-panel {
+  background: var(--news);
+  padding: 22px 24px 10px;
+  text-align: center;
+  border-top: 3px dashed rgba(26,26,26,0.35);
+}
+.firma {
+  font-family: 'Gloria Hallelujah', cursive;
+  font-size: 21px;
+  color: var(--red);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.pd {
+  font-family: 'Schoolbell', cursive;
+  font-size: 14px;
+  margin-top: 6px;
+  opacity: 0.7;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 520px) {
+  .panel { padding: 18px 16px; }
+  p, .bocadillo { font-size: 16.5px; }
+  .firma { font-size: 18px; }
+  .foto-marco.right, .foto-marco.left { float: none; margin: 4px auto 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tira { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="tira">
+
+  <div class="cabecera">
+    <div class="titulo">Para ti ✦ hoy</div>
+    <div class="fecha">20/03/2026</div>
+  </div>
+
+  <!-- PANEL 1 -->
+  <div class="panel">
+    <div class="panel-num">1</div>
+
+    <div class="foto-marco right small">
+      <img src="images/snoopy-pensando.png" alt="Snoopy pensando"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="foto-fallback">coloca aquí<br>images/snoopy-pensando.png</div>
+    </div>
+
+    <p>Hoy cumplimos seis meses, y llevo un rato dándole vueltas a cómo empezar esto sin decir otra vez las mismas frases de siempre. Al final creo que lo mejor es ser simple: han sido seis meses buenos, de los que se sienten completos aunque no sean perfectos.</p>
+    <p>No fue un momento exacto el que lo cambió todo, fueron muchos pequeños: una conversación que se alargó más de lo planeado, una risa que se me escapó sin querer, la costumbre de contarte primero las cosas buenas del día. Así, sin darnos cuenta, construimos algo real.</p>
+
+    <div class="clear"></div>
+  </div>
+
+  <!-- PANEL 2 -->
+  <div class="panel">
+    <div class="panel-num">2</div>
+
+    <div class="foto-marco left small">
+      <img src="images/snoopy-bailando.avif" alt="Snoopy bailando"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="foto-fallback">coloca aquí<br>images/snoopy-bailando.png</div>
+    </div>
+
+    <p>Contigo aprendí que no hace falta que todo sea grande para que valga. Que un mensaje a la hora correcta puede cambiar un día completo. Que la tranquilidad también es una forma de cariño, tal vez la más honesta de todas.</p>
+
+    <div class="bocadillo">
+      — ¿Y si seguimos así, sin apurar nada?<br>
+      — Me encanta esa idea.
+    </div>
+
+    <p>Seis meses no son una cifra mágica, pero sí representan seis meses reales de elegirnos, con días buenos y días torpes, y con la decisión constante de seguir intentándolo.</p>
+  </div>
+
+  <!-- PANEL 3 -->
+  <div class="panel">
+    <div class="panel-num">3</div>
+
+    <div class="foto-marco">
+      <img src="images/snoopy-abrazo.jpg" alt="Snoopy abrazando"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="foto-fallback">coloca aquí<br>images/snoopy-abrazo.jpg</div>
+    </div>
+
+    <div class="grito">✦ ¡SEIS MESES! ✦</div>
+
+    <p>Gracias por estar presente incluso cuando no sabes que te necesito. Gracias por hacerme sentir importante con gestos sencillos que, para mí, significan muchísimo. Gracias por confiar en mí y dejarme conocer cada parte tuya, poco a poco, sin prisa.</p>
+
+    <p>No sé qué tan larga vaya a ser nuestra historia, ojalá para toda la vida, pero sí sé que quiero seguir escribiéndola contigo, un día a la vez.</p>
+  </div>
+
+  <div class="firma-panel">
+    <div class="foto-marco small" style="margin-bottom:14px;">
+      <img src="images/snoopy-durmiendo.jpg" alt="Snoopy en su casita"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="foto-fallback">coloca aquí<br>images/snoopy-durmiendo.jpg</div>
+    </div>
+    <div class="firma">Feliz seis meses,<br>mi chirriquitina 🐾</div>
+    <div class="pd">P.D. — gracias por ser mi lugar favorito.</div>
+  </div>
+
+</div>
+
+</body>
+</html>
